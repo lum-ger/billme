@@ -4,11 +4,19 @@ import { loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
+const stubPgNative = {
+  name: 'stub-pg-native',
+  enforce: 'pre' as const,
+  resolveId: (id: string) => (id === 'pg-native' ? 'virtual:pg-native-stub' : null),
+  load: (id: string) => (id === 'virtual:pg-native-stub' ? 'export default null;' : null),
+};
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
 
   return {
     main: {
+      plugins: [stubPgNative],
       build: {
         outDir: 'dist/main',
         lib: {
