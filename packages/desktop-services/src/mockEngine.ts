@@ -3499,7 +3499,7 @@ const invoke = async <K extends IpcRouteKey>(key: K, args: IpcArgs<K>): Promise<
         next.workflowStatus = 'pending_approval';
       } else if (action === 'approve' || action === 'post') {
         next.workflowStatus = 'approved';
-      } else if (action === 'reject' || action === 'request_receipt') {
+      } else if (action === 'reject' || action === 'request_receipt' || action === 'discard') {
         next.workflowStatus = 'incomplete';
         if (action === 'reject' && rejectReason) {
           next.validationIssues = [

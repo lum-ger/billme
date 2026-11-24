@@ -39,6 +39,8 @@ export function getAllowedActions(
 
   if (permissionCtx.canMutate && status !== 'posted' && status !== 'reversed') {
     actions.push('request_receipt');
+    // A line that must never be booked (0,00 EUR card verification) needs a way out of "Buchen".
+    if (status !== 'corrected') actions.push('discard');
   }
 
   return Array.from(new Set(actions));
@@ -66,6 +68,8 @@ export function canTransition(
     case 'save_draft':
     case 'request_receipt':
       return status !== 'posted' && status !== 'reversed';
+    case 'discard':
+      return status !== 'posted' && status !== 'reversed' && status !== 'corrected';
     case 'submit_for_review':
       return ['incomplete', 'suggested', 'ready_for_review', 'corrected'].includes(status) && !blocking;
     case 'approve':
@@ -185,6 +189,9 @@ export function transitionBooking(
       );
       return next;
     }
+    case 'discard':
+      next.activity.unshift(createEvent('state_changed', 'Bankzeile verworfen', ctx.actorId, ctx.actorName, ctx.rejectReason));
+      return next;
     case 'request_receipt':
       next.activity.unshift(createEvent('comment_added', 'Beleg angefordert', ctx.actorId, ctx.actorName));
       return next;

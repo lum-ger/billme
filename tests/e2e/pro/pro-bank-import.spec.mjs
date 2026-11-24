@@ -103,3 +103,29 @@ test('shows a blocked draft in the inbox queues instead of hiding it', async () 
   await expect(page.getByRole('button', { name: /^Unvollständig [1-9]/ })).toBeVisible();
   await page.screenshot({ path: test.info().outputPath('01-blocked-draft-in-queues.png') });
 });
+
+// A card import carries 0,00 € verification lines. Their draft is blocked for good, and "reject" is only a
+// return for correction, so the line used to sit in "Buchen" with no way out.
+test('discards a 0,00 € bank line from the booking inbox', async () => {
+  const { page, baseUrl } = desktop;
+  const csvPath = path.join(os.tmpdir(), `billme-card-${process.pid}-${Date.now()}.csv`);
+  fs.writeFileSync(csvPath, ['Buchungstag;Verwendungszweck;Empfänger;Betrag', '23.11.2026;Verifizierung;Google Chrome Temp;0,00'].join('\n'));
+  try {
+    const [account] = await invokeDesktopIpc(page, 'accounts:list');
+    const preview = await invokeDesktopIpc(page, 'finance:importPreview', { path: csvPath, profile: 'auto', accountIdForDedupHash: account.id });
+    expect((await invokeDesktopIpc(page, 'finance:importCommit', { path: csvPath, accountId: account.id, profile: preview.profile, mapping: preview.suggestedMapping })).imported).toBe(1);
+  } finally {
+    fs.rmSync(csvPath, { force: true });
+  }
+  await page.reload();
+  await page.goto(appUrl(baseUrl, '/accounting?view=inbox'));
+  await page.getByRole('button', { name: 'Google Chrome Temp öffnen' }).click();
+  await page.getByRole('button', { name: 'Erweitern' }).click();
+  await page.getByRole('button', { name: 'Verwerfen', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Bankzeile verwerfen' }).click();
+  await expect(page.getByText('Verworfen. Die Bankzeile steht nicht mehr in „Buchen“.')).toBeVisible();
+  const rows = await invokeDesktopIpc(page, 'pro:listBankTransactions');
+  expect(rows.some((row) => row.counterparty === 'Google Chrome Temp')).toBe(false);
+  await page.goto(appUrl(baseUrl, '/accounting?view=inbox'));
+  await expect(page.getByRole('button', { name: 'Google Chrome Temp öffnen' })).toHaveCount(0);
+});
