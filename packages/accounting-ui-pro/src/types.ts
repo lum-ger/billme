@@ -53,7 +53,8 @@ export type BookingAction =
   | 'post'
   | 'reverse'
   | 'create_correction'
-  | 'request_receipt';
+  | 'request_receipt'
+  | 'discard';
 
 export interface ActivityEvent {
   id: string;

@@ -148,11 +148,12 @@ const ACTION_DONE: Partial<Record<BookingAction, string>> = {
   post: 'Gebucht. Die Buchung steht im Journal.',
   reverse: 'Storniert. Die Gegenbuchung steht im Journal.',
   create_correction: 'Wieder offen: neu kontieren, prüfen und buchen. Original und Storno bleiben im Journal.',
+  discard: 'Verworfen. Die Bankzeile steht nicht mehr in „Buchen“.',
   request_receipt: 'Beleg angefordert. Die Buchung bleibt bis zum Beleg in „Ohne Beleg“.',
 };
 
 function actionRequiresConfirmation(action: BookingAction) {
-  return action === 'reverse' || action === 'reject';
+  return action === 'reverse' || action === 'reject' || action === 'discard';
 }
 
 export default function BookingEditor({ transactionId, role, accounts, corporation = false, onBack, onStoreChange, onDirtyChange, receiptApi }: BookingEditorProps) {
@@ -427,6 +428,12 @@ export default function BookingEditor({ transactionId, role, accounts, corporati
       title: 'Buchung wirklich stornieren?',
       description: 'Die Buchung wird storniert und kann nicht direkt zurückgesetzt werden.',
       confirmLabel: 'Buchung stornieren',
+    }
+    : confirmationAction === 'discard'
+    ? {
+      title: 'Bankzeile verwerfen?',
+      description: 'Die Zeile wird nicht gebucht und verschwindet aus „Buchen“, zum Beispiel eine Kartenverifizierung über 0,00 €.',
+      confirmLabel: 'Bankzeile verwerfen',
     }
     : {
       title: 'Freigabe ablehnen?',

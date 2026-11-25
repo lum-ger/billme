@@ -261,6 +261,7 @@ const draftActionBody = z.object({
     'reverse',
     'create_correction',
     'request_receipt',
+    'discard',
   ]),
   rejectReason: z.string().optional(),
 });

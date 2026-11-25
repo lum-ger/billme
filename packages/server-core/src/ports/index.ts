@@ -355,7 +355,7 @@ export interface BillingUnitOfWork<TRepositories extends Partial<BillingReposito
 
 export interface ProDraftActionRequest {
   transactionId: string;
-  action: 'save_draft' | 'submit_for_review' | 'approve' | 'reject' | 'post' | 'reverse' | 'create_correction' | 'request_receipt';
+  action: 'save_draft' | 'submit_for_review' | 'approve' | 'reject' | 'post' | 'reverse' | 'create_correction' | 'request_receipt' | 'discard';
   rejectReason?: string;
   mutation?: AccountingMutationContext;
 }

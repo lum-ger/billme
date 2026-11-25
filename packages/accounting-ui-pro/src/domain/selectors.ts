@@ -30,6 +30,7 @@ export const bookingActionLabels: Record<BookingAction, string> = {
   reverse: 'Stornieren',
   create_correction: 'Neu kontieren',
   request_receipt: 'Beleg anfordern',
+  discard: 'Verwerfen',
 };
 
 export function txMatchesQueue(tx: Transaction, queue: InboxQueueKey): boolean {
